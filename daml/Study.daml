@@ -1,0 +1,71 @@
+module Study where
+import Student
+import Daml.Script
+import DA.List
+
+data Availability = Availability with
+ monday:(Time, Time)
+ tuesday:(Time, Time)
+ wednesday:(Time, Time)
+ thrusday:(Time, Time)
+ friday:(Time, Time)
+ saturday:(Time, Time)
+ sunday:(Time, Time)
+  deriving (Eq, Show)
+
+template StudyRoom 
+    with
+     location: Text
+     availablity: Availability
+     librarian: Party
+    where
+    signatory librarian
+    
+
+template StudyGroup
+  with
+   parties:[Party]
+   organizer:Student
+   room: StudyRoom
+  where
+   signatory parties
+   
+
+template PendingStudyGroup
+  with
+   group: StudyGroup
+   alreadyAgreed:[Party]
+  where
+   signatory alreadyAgreed
+   ensure
+    unique alreadyAgreed
+
+   let toSign = filter (`notElem` alreadyAgreed) group.parties
+  
+   choice Agree : ContractId PendingStudyGroup with
+        signer : Party
+     controller signer
+        do
+          assert (signer `elem` toSign)
+          create this with alreadyAgreed = signer :: alreadyAgreed
+   
+   choice CreatGroup : () with
+        signer : Party
+      controller signer
+        do
+            assert (sort alreadyAgreed == sort group.parties)
+
+
+  
+test: Script()
+ 
+test = do
+alice <- allocateParty "Alice"
+jeff <- allocateParty "Jeff"
+advisor <- allocateParty "Advisor"
+
+
+
+
+
+return ()

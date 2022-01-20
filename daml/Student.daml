@@ -1,0 +1,72 @@
+module Student where
+
+import DA.List
+
+
+data Student = Student with
+    name: Party
+    advisor: Party
+    major: Text
+    studnetId: Int
+    scheudle: StudentSchedule
+     deriving (Eq, Show)
+
+data EqRecord = EqRecord with
+  my_txt : Text
+  my_int : Int
+  my_dec : Decimal
+  my_list : [Text]
+    deriving (Eq)
+
+type Class = (Text,Date)
+type Activity = (Text, Date)
+
+
+data Schedule = Schedule with -- an individual must be enrolled in a minimum of 3 classes to qaulify as a student, they can also have activities eg. band, soccer etc
+    class1: Class
+    class2: Class
+    class3: Class
+    class4: Optional Class
+    class5: Optional Class
+    activity1:  Activity
+    activity2:  Activity
+     deriving (Eq, Show)
+
+
+template StudentSchedule
+    with
+     student: Student
+     schedule: Schedule
+    
+    where
+    signatory student.name, student.advisor
+    
+    choice UpdateActivity: ContractId StudentSchedule with
+        updater: Party
+        activityChange: [Activity]
+     controller updater
+     do
+      let changeLength = length activityChange
+      if(changeLength == 2) then do 
+        let firstActivity = head activityChange
+        let secondActivity = last activityChange
+        create this with
+          schedule.activity1 = firstActivity
+          schedule.activity2 = secondActivity
+      else do
+        let activityToChange =  head activityChange
+        create this with
+         schedule.activity1 = activityToChange
+
+    -- choice UpdateClass: ContractId StudentSchedule with
+    --     updater: Party
+    --     classChange: [Class]
+    --  controller updater
+    --  do
+    --   let changeLength = length classChange
+      
+    
+
+ 
+
+
